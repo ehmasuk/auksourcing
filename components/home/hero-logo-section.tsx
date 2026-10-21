@@ -1,6 +1,5 @@
 "use client"
 
-import { Box } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useState } from "react"
 
@@ -21,12 +20,6 @@ const HeroLogoModel = dynamic(() => import("./hero-logo-model"), {
 
 export default function HeroLogoSection() {
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [pulseCount, setPulseCount] = useState(0)
-
-  const handlePulse = () => {
-    setPulseCount((c) => c + 1)
-    setHasInteracted(true)
-  }
 
   return (
     <section className="relative w-full pt-1 pb-10">
@@ -40,7 +33,7 @@ export default function HeroLogoSection() {
         <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_50%_50%,transparent_60%,rgba(0,0,0,0.65)_100%)]" />
 
         {/* Real-time 3D Winged Globe Experience */}
-        <HeroLogoModel onPulseTriggered={handlePulse} />
+        <HeroLogoModel />
 
         {/* ── In-Canvas Quiet Studio HUD Overlays ────────────────────── */}
         <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between p-5 md:p-8">
@@ -78,27 +71,18 @@ export default function HeroLogoSection() {
               </span>
             </div>
 
-            {/* Interactive hint & pulse burst badge (with clearance for fixed replay button) */}
-            <div className="flex items-center gap-2.5 sm:mr-36">
-              {pulseCount > 0 && (
-                <div className="flex items-center gap-1.5 rounded-full border border-electric-indigo/40 bg-electric-indigo/20 px-3 py-1.5 font-mono text-[10px] text-electric-indigo tracking-wider animate-in fade-in duration-300">
-                  <Box className="size-3 text-acid-lime" />
-                  <span>PULSE ACTIVE x{pulseCount}</span>
-                </div>
-              )}
-
-              <div
-                className={`flex items-center gap-2.5 rounded-full border border-white/15 bg-black/60 px-4 py-2 font-mono text-[11px] text-white/90 backdrop-blur-md transition-all duration-700 ${
-                  hasInteracted
-                    ? "opacity-60 hover:opacity-100"
-                    : "opacity-100 shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
-                }`}
-              >
-                <span className="size-1.5 rounded-full bg-acid-lime animate-ping" />
-                <span className="tracking-wide text-[10px] md:text-[11px]">
-                  MOVE TO MAGNETIZE • DRAG TO ORBIT • CLICK TO PULSE
-                </span>
-              </div>
+            {/* Interactive hint (with clearance for fixed replay button) */}
+            <div
+              className={`flex items-center gap-2.5 rounded-full border border-white/15 bg-black/60 px-4 py-2 font-mono text-[11px] text-white/90 backdrop-blur-md transition-all duration-700 ${
+                hasInteracted
+                  ? "opacity-60 hover:opacity-100"
+                  : "opacity-100 shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
+              }`}
+            >
+              <span className="size-1.5 rounded-full bg-acid-lime animate-ping" />
+              <span className="tracking-wide text-[10px] md:text-[11px]">
+                MOVE TO MAGNETIZE • DRAG TO ORBIT
+              </span>
             </div>
           </div>
         </div>

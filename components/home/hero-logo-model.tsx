@@ -1,17 +1,27 @@
 "use client"
 
 import { Center, Float, OrbitControls, useGLTF } from "@react-three/drei"
-import type { ThreeEvent } from "@react-three/fiber"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { Suspense, useEffect, useMemo, useRef, useState } from "react"
+import { Suspense, useMemo, useRef } from "react"
 import * as THREE from "three"
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js"
 
 // ── Floating Ambient Celestial Dust ──────────────────────────────────────
+// Seeded PRNG keeps the dust field deterministic across renders
+function createSeededRandom(seedValue: number) {
+  let state = seedValue
+  return () => {
+    state = (state * 16807) % 2147483647
+    return (state - 1) / 2147483646
+  }
+}
+
 function HeroParticles({ count = 120 }: { count?: number }) {
   const pointsRef = useRef<THREE.Points>(null)
 
   const [positions, colors] = useMemo(() => {
+    const random = createSeededRandom(12345)
+
     const pos = new Float32Array(count * 3)
     const col = new Float32Array(count * 3)
 
@@ -21,15 +31,15 @@ function HeroParticles({ count = 120 }: { count?: number }) {
     const colorLavender = new THREE.Color("#8e99f3")
 
     for (let i = 0; i < count; i++) {
-      const radius = 1.6 + Math.random() * 3.4
-      const theta = Math.random() * Math.PI * 2
-      const phi = (Math.random() - 0.5) * Math.PI * 0.85
+      const radius = 1.6 + random() * 3.4
+      const theta = random() * Math.PI * 2
+      const phi = (random() - 0.5) * Math.PI * 0.85
 
       pos[i * 3] = radius * Math.cos(phi) * Math.cos(theta)
-      pos[i * 3 + 1] = radius * Math.sin(phi) + (Math.random() - 0.5) * 0.6
+      pos[i * 3 + 1] = radius * Math.sin(phi) + (random() - 0.5) * 0.6
       pos[i * 3 + 2] = radius * Math.cos(phi) * Math.sin(theta)
 
-      const rand = Math.random()
+      const rand = random()
       const c =
         rand < 0.4
           ? colorElectricIndigo
@@ -71,42 +81,6 @@ function HeroParticles({ count = 120 }: { count?: number }) {
   )
 }
 
-// ── Click Impulse Shockwave Ring ─────────────────────────────────────────
-function ShockwaveRing({ triggerTime }: { triggerTime: number }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-
-  useFrame((state) => {
-    if (!meshRef.current) return
-    const elapsed = state.clock.elapsedTime - triggerTime
-    if (elapsed < 0 || elapsed > 1.4) {
-      meshRef.current.visible = false
-      return
-    }
-
-    meshRef.current.visible = true
-    const progress = elapsed / 1.4
-    const scale = 0.4 + progress * 5.2
-    meshRef.current.scale.set(scale, scale, scale)
-
-    const mat = meshRef.current.material as THREE.MeshBasicMaterial
-    mat.opacity = Math.max(0, (1 - progress) * 0.75)
-  })
-
-  return (
-    <mesh ref={meshRef} rotation={[Math.PI / 2, 0, 0]} visible={false}>
-      <ringGeometry args={[0.95, 1.0, 64]} />
-      <meshBasicMaterial
-        color="#1a2ffb"
-        transparent
-        opacity={0}
-        blending={THREE.AdditiveBlending}
-        side={THREE.DoubleSide}
-        depthWrite={false}
-      />
-    </mesh>
-  )
-}
-
 // ── Interactive Cursor Follow Spotlight ──────────────────────────────────
 function CursorLight() {
   const lightRef = useRef<THREE.PointLight>(null)
@@ -140,35 +114,20 @@ function CursorLight() {
   )
 }
 
-// ── 3D Winged Globe Emblem with Aerodynamic Velocity Response ────────────
-interface EmblemLogoProps {
-  onPulse: () => void
-  impulseTimeRef: React.MutableRefObject<number>
-}
-
-function EmblemLogo({ onPulse, impulseTimeRef }: EmblemLogoProps) {
+// ── 3D Winged Globe Emblem ────────────────────────────────────────────────
+function EmblemLogo() {
   const { scene } = useGLTF("/models/logo.glb")
   const groupRef = useRef<THREE.Group>(null)
   const pointer = useThree((state) => state.pointer)
 
-  const pulseRef = useRef(0)
-
   // Magnetic pull targets, updated only in useFrame
   const magnetPosition = useRef({ x: 0, y: 0 })
 
-  // Drag state — used only to distinguish a real drag (camera orbit)
-  // from a click, so orbiting never fires the click pulse
-  const isDragging = useRef(false)
-  const dragStartClient = useRef({ x: 0, y: 0 })
-  const movedSignificantly = useRef(false)
-
-  const DRAG_MOVE_THRESHOLD_PX = 6
-
-  // Shader uniforms
+  // Shader uniforms — steady flap rhythm, no click swell
   const uniformsRef = useRef({
     uTime: { value: 0 },
-    uFlapSpeed: { value: 3.4 },
-    uFlapAmp: { value: 0.9 },
+    uFlapSpeed: { value: 3.2 },
+    uFlapAmp: { value: 0.85 },
   })
 
   // Clone scene & inject GPU vertex flap shader
@@ -265,28 +224,8 @@ function EmblemLogo({ onPulse, impulseTimeRef }: EmblemLogoProps) {
   useFrame((state, delta) => {
     if (!groupRef.current) return
 
-    // 1. Pulse decay
-    if (pulseRef.current > 0) {
-      pulseRef.current = Math.max(0, pulseRef.current - delta * 2.2)
-    }
-
-    // 2. Consistent flap rhythm — speed only swells on click pulse
-    const baseSpeed = 3.2
-    const dynamicSpeed = baseSpeed + pulseRef.current * 3.5
-    const baseAmp = 0.85
-    const dynamicAmp = baseAmp + pulseRef.current * 0.4
-
+    // 1. Consistent flap rhythm
     uniformsRef.current.uTime.value = state.clock.elapsedTime
-    uniformsRef.current.uFlapSpeed.value = THREE.MathUtils.lerp(
-      uniformsRef.current.uFlapSpeed.value,
-      dynamicSpeed,
-      0.1
-    )
-    uniformsRef.current.uFlapAmp.value = THREE.MathUtils.lerp(
-      uniformsRef.current.uFlapAmp.value,
-      dynamicAmp,
-      0.1
-    )
 
     // 3. Natural body vertical lift with flapping
     const bodyLift =
@@ -330,70 +269,13 @@ function EmblemLogo({ onPulse, impulseTimeRef }: EmblemLogoProps) {
       smoothing
     )
 
-    // Scale pulse on click
-    const targetScale = 1.0 + pulseRef.current * 0.12
-    groupRef.current.scale.setScalar(
-      THREE.MathUtils.lerp(groupRef.current.scale.x, targetScale, 0.12)
-    )
-
+    // Scale stays constant — everything moves via magnet/light now
     groupRef.current.position.x = magnetPosition.current.x
     groupRef.current.position.y = bodyLift + magnetPosition.current.y + 0.8
   })
 
-  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    isDragging.current = true
-    movedSignificantly.current = false
-    dragStartClient.current = { x: e.clientX, y: e.clientY }
-  }
-
-  const handleClick = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation()
-
-    // A genuine drag is a rotation gesture, not a pulse click
-    if (movedSignificantly.current) return
-
-    pulseRef.current = 1.0
-    impulseTimeRef.current = performance.now() / 1000
-    onPulse()
-  }
-
-  // Window listeners so dragging keeps tracking (and releases) even
-  // when the cursor leaves the model or the canvas mid-drag
-  useEffect(() => {
-    const handleMove = (e: PointerEvent) => {
-      if (!isDragging.current) return
-
-      const dist = Math.hypot(
-        e.clientX - dragStartClient.current.x,
-        e.clientY - dragStartClient.current.y
-      )
-
-      if (dist > DRAG_MOVE_THRESHOLD_PX) {
-        movedSignificantly.current = true
-      }
-    }
-
-    const endDrag = () => {
-      isDragging.current = false
-    }
-
-    window.addEventListener("pointermove", handleMove)
-    window.addEventListener("pointerup", endDrag)
-    window.addEventListener("pointercancel", endDrag)
-
-    return () => {
-      window.removeEventListener("pointermove", handleMove)
-      window.removeEventListener("pointerup", endDrag)
-      window.removeEventListener("pointercancel", endDrag)
-    }
-  }, [])
-
   return (
-    <group
-      ref={groupRef}
-      onPointerDown={handlePointerDown}
-      onClick={handleClick}
-    >
+    <group ref={groupRef}>
       <Center>
         <primitive object={clonedScene} />
       </Center>
@@ -423,19 +305,7 @@ function ModelFallback() {
 }
 
 // ── Main Exported 3D Scene Canvas ────────────────────────────────────────
-interface HeroLogoModelProps {
-  onPulseTriggered?: () => void
-}
-
-export default function HeroLogoModel({ onPulseTriggered }: HeroLogoModelProps) {
-  const impulseTimeRef = useRef(-10)
-  const [pulseKey, setPulseKey] = useState(0)
-
-  const handlePulse = () => {
-    setPulseKey((k) => k + 1)
-    onPulseTriggered?.()
-  }
-
+export default function HeroLogoModel() {
   return (
     <div className="absolute inset-0 z-0 cursor-grab active:cursor-grabbing select-none">
       <Canvas
@@ -467,9 +337,6 @@ export default function HeroLogoModel({ onPulseTriggered }: HeroLogoModelProps) 
         {/* Floating dust embers */}
         <HeroParticles count={90} />
 
-        {/* Impulse Shockwave ring on click */}
-        <ShockwaveRing key={pulseKey} triggerTime={impulseTimeRef.current} />
-
         {/* 3D Winged Globe Emblem */}
         <Suspense fallback={<ModelFallback />}>
           <Float
@@ -478,23 +345,19 @@ export default function HeroLogoModel({ onPulseTriggered }: HeroLogoModelProps) 
             floatIntensity={0.16}
             floatingRange={[-0.04, 0.04]}
           >
-            <EmblemLogo
-              onPulse={handlePulse}
-              impulseTimeRef={impulseTimeRef}
-            />
+            <EmblemLogo />
           </Float>
         </Suspense>
 
         {/* Camera angle control: drag to orbit, hard-limited to a
-            minimal sweep around the emblem so it never breaks framing.
-            Pulse click suppression keeps a drag from firing a pulse. */}
+            minimal sweep around the emblem so it never breaks framing */}
         <OrbitControls
           enableZoom={false}
           enablePan={false}
           rotateSpeed={0.55}
           dampingFactor={0.06}
           enableDamping
-          target={[0, 0.5, 0]}
+          target={[0, 0.55, 0]}
           minPolarAngle={Math.PI / 3.2}
           maxPolarAngle={Math.PI / 1.9}
           minAzimuthAngle={-0.6}

@@ -1,7 +1,7 @@
+import Globe3DDemoThird from "@/components/3d-globe-demo-3"
 import HeroHeader from "@/components/home/hero-header"
 import HeroLogoSection from "@/components/home/hero-logo-section"
 // import HeroSection from "@/components/home/hero-section"
-import ReplayButton from "@/components/home/replay-button"
 import LoadingScreen from "@/components/loader/loading-screen"
 
 export default function Page() {
@@ -19,10 +19,10 @@ export default function Page() {
 
           {/* Previous Torus Physics Simulation (preserved & commented out) */}
           {/* <HeroSection /> */}
-        </div>
 
-        {/* Replay trigger for demonstration & client showcase */}
-        <ReplayButton />
+          {/* globe section */}
+          <Globe3DDemoThird/>
+        </div>
       </main>
     </>
   )
