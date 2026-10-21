@@ -2,6 +2,7 @@
 import { OrbitControls, Sphere } from "@react-three/drei"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { useRef } from "react"
+import * as THREE from "three"
 import { pointsInner, pointsOuter } from "./utils"
 
 const ParticleRing = ({ height }: { height: string }) => {
@@ -24,7 +25,7 @@ const ParticleRing = ({ height }: { height: string }) => {
 }
 
 const PointCircle = () => {
-  const ref = useRef(null)
+  const ref = useRef<THREE.Group>(null)
 
   useFrame(({ clock }) => {
     if (ref.current?.rotation) {

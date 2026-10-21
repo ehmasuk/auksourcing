@@ -10,13 +10,14 @@ const getGradientStop = (ratio: number) => {
   // just clamp to 0
   ratio = ratio > 1 ? 1 : ratio < 0 ? 0 : ratio
 
-  const c0 = LEFT_COLOR.match(/.{1,2}/g)?.map(
-    (oct) => parseInt(oct, 16) * (1 - ratio)
+  const c0 =
+    LEFT_COLOR.match(/.{1,2}/g)?.map((oct) => parseInt(oct, 16) * (1 - ratio)) ??
+    []
+  const c1 =
+    RIGHT_COLOR.match(/.{1,2}/g)?.map((oct) => parseInt(oct, 16) * ratio) ?? []
+  const ci = [0, 1, 2].map((i) =>
+    Math.min(Math.round((c0[i] ?? 0) + (c1[i] ?? 0)), 255)
   )
-  const c1 = RIGHT_COLOR.match(/.{1,2}/g)?.map(
-    (oct) => parseInt(oct, 16) * ratio
-  )
-  const ci = [0, 1, 2].map((i) => Math.min(Math.round(c0[i] + c1[i]), 255))
   const color = ci
     .reduce((a, v) => (a << 8) + v, 0)
     .toString(16)
@@ -54,7 +55,7 @@ export const pointsInner = Array.from(
 
   return {
     idx: num,
-    position: [x, y, z],
+    position: [x, y, z] as [number, number, number],
     color,
   }
 })
@@ -74,7 +75,7 @@ export const pointsOuter = Array.from(
 
   return {
     idx: num,
-    position: [x, y, z],
+    position: [x, y, z] as [number, number, number],
     color,
   }
 })

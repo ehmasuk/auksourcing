@@ -1,10 +1,25 @@
-import HeroSection from "@/components/home/hero-section";
+import HeroHeader from "@/components/home/hero-header"
+import HeroSection from "@/components/home/hero-section"
+import ReplayButton from "@/components/home/replay-button"
+import LoadingScreen from "@/components/loader/loading-screen"
 
 export default function Page() {
   return (
-    <div className="mx-auto my-10 max-w-6xl overflow-hidden rounded-2xl">
-      {/* 3d model */}
-      <HeroSection />
-    </div>
+    <>
+      {/* 3D Animated Loading Screen with winged globe logo */}
+      <LoadingScreen />
+
+      <main className="relative min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <HeroHeader />
+
+          {/* 3D physics interactive hero model */}
+          <HeroSection />
+        </div>
+
+        {/* Replay trigger for demonstration & client showcase */}
+        <ReplayButton />
+      </main>
+    </>
   )
 }
