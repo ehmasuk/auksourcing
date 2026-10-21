@@ -242,7 +242,11 @@ export default function LoadingScreen({ onFinished }: LoadingScreenProps) {
             {/* Unified, Perfectly Symmetrical Brand Name */}
             <h1 className="relative font-heading text-3xl sm:text-4xl md:text-5xl lg:text-[58px] font-medium tracking-[0.22em] uppercase leading-none select-none animate-loader-wordmark">
               <span className="relative z-10 inline-block animate-loader-shimmer drop-shadow-[0_4px_30px_rgba(255,255,255,0.22)]">
-                AUKSOURCING
+                AUK
+                <span className="-mx-5 text-amber-600! [-webkit-text-fill-color:currentColor]">
+                  ⚡
+                </span>
+                OURCING
               </span>
             </h1>
 

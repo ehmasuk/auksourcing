@@ -337,7 +337,7 @@ function EmblemLogo({ onPulse, impulseTimeRef }: EmblemLogoProps) {
     )
 
     groupRef.current.position.x = magnetPosition.current.x
-    groupRef.current.position.y = bodyLift + magnetPosition.current.y + 0.4
+    groupRef.current.position.y = bodyLift + magnetPosition.current.y + 0.8
   })
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
@@ -494,7 +494,7 @@ export default function HeroLogoModel({ onPulseTriggered }: HeroLogoModelProps) 
           rotateSpeed={0.55}
           dampingFactor={0.06}
           enableDamping
-          target={[0, 0.4, 0]}
+          target={[0, 0.5, 0]}
           minPolarAngle={Math.PI / 3.2}
           maxPolarAngle={Math.PI / 1.9}
           minAzimuthAngle={-0.6}

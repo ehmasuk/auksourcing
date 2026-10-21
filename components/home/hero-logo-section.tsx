@@ -32,7 +32,7 @@ export default function HeroLogoSection() {
     <section className="relative w-full pt-1 pb-10">
       {/* ── 3D Brand Logo Showcase Container ───────────────────────── */}
       <div
-        className="group relative w-full h-[calc(100vh-140px)] min-h-[620px] max-h-[840px] rounded-[28px] md:rounded-[36px] lg:rounded-[40px] overflow-hidden bg-[#0c0d12] select-none shadow-[0_24px_70px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.06]"
+        className="group relative w-full h-[calc(100vh-140px)] min-h-155 max-h-210 rounded-[28px] md:rounded-[36px] lg:rounded-[40px] overflow-hidden bg-[#0c0d12] select-none shadow-[0_24px_70px_rgba(0,0,0,0.12)] ring-1 ring-black/6"
         onPointerDown={() => setHasInteracted(true)}
       >
         {/* Ambient atmospheric vignetting & subtle deep blue center glow */}
