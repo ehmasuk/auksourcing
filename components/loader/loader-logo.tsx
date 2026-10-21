@@ -7,40 +7,64 @@ import * as THREE from "three"
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js"
 
 export function LoaderPlaceholder() {
-  const meshRef = useRef<THREE.Group>(null)
+  const dotRef = useRef<THREE.Mesh>(null)
+  const ping1Ref = useRef<THREE.Mesh>(null)
+  const ping2Ref = useRef<THREE.Mesh>(null)
 
-  useFrame((state, delta) => {
-    if (!meshRef.current) return
-    meshRef.current.rotation.y += delta * 0.8
-    meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.8) * 0.15
+  useFrame((state) => {
+    const t = state.clock.elapsedTime
+
+    // Gentle heartbeat on the core dot
+    if (dotRef.current) {
+      dotRef.current.scale.setScalar(1 + Math.sin(t * 3) * 0.18)
+    }
+
+    // Radar ping rings expanding and fading on a loop
+    const PING_PERIOD = 1.5
+    const updatePing = (mesh: THREE.Mesh | null, offset: number) => {
+      if (!mesh) return
+      const phase = (t / PING_PERIOD + offset) % 1
+      mesh.scale.setScalar(0.5 + phase * 3.2)
+      const mat = mesh.material as THREE.MeshBasicMaterial
+      mat.opacity = 0.6 * (1 - phase) * (1 - phase)
+    }
+    updatePing(ping1Ref.current, 0)
+    updatePing(ping2Ref.current, 0.5)
   })
 
   return (
-    <group ref={meshRef}>
-      {/* Outer wireframe globe */}
-      <mesh>
-        <sphereGeometry args={[0.9, 20, 20]} />
-        <meshBasicMaterial
-          color="#1a2ffb"
-          wireframe
-          transparent
-          opacity={0.4}
-        />
-      </mesh>
-      {/* Inner pulsating core */}
-      <mesh>
-        <icosahedronGeometry args={[0.5, 1]} />
+    <group position={[0, MODEL_Y_OFFSET, 0]}>
+      {/* Core dot — acid lime heartbeat */}
+      <mesh ref={dotRef}>
+        <sphereGeometry args={[0.045, 24, 24]} />
         <meshStandardMaterial
           color="#c1ff00"
           emissive="#c1ff00"
-          emissiveIntensity={0.8}
-          wireframe
+          emissiveIntensity={2.2}
+          toneMapped={false}
         />
       </mesh>
-      {/* Orbital equator ring */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[1.2, 0.015, 12, 64]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.6} />
+
+      {/* Expanding indigo pings */}
+      <mesh ref={ping1Ref}>
+        <torusGeometry args={[0.06, 0.003, 8, 64]} />
+        <meshBasicMaterial
+          color="#1a2ffb"
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+      <mesh ref={ping2Ref}>
+        <torusGeometry args={[0.06, 0.003, 8, 64]} />
+        <meshBasicMaterial
+          color="#1a2ffb"
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
       </mesh>
     </group>
   )
@@ -51,14 +75,18 @@ const INTRO_START_Z = -18
 const INTRO_START_SCALE = 0.22
 const INTRO_DURATION = 2.2
 
-// Vertical offset to sit a bit higher on screen (unused top space)
-const MODEL_Y_OFFSET = 0.6
+// Vertical offset centered at origin
+const MODEL_Y_OFFSET = 0
+
+// Completion flourish: forward push toward the camera on the last flap
+const COMPLETE_Z_PUSH = 0.25
 
 function FlappingLogo({ isComplete }: { isComplete: boolean }) {
   const { scene } = useGLTF("/models/logo.glb")
   const groupRef = useRef<THREE.Group>(null)
   const pointer = useThree((state) => state.pointer)
   const introProgressRef = useRef(0)
+  const completePushRef = useRef(0)
 
   // Uniforms passed to custom vertex shader for GPU-accelerated wing flapping
   const uniformsRef = useRef({
@@ -234,7 +262,14 @@ function FlappingLogo({ isComplete }: { isComplete: boolean }) {
 
     // Position: hover lift + forward fly-in along z, raised on screen
     groupRef.current.position.y = bodyLift + MODEL_Y_OFFSET
-    groupRef.current.position.z = introZ
+
+    // Completion flourish: lean slightly toward the camera on the last flap
+    completePushRef.current = THREE.MathUtils.lerp(
+      completePushRef.current,
+      isComplete ? COMPLETE_Z_PUSH : 0,
+      0.08
+    )
+    groupRef.current.position.z = introZ + completePushRef.current
   })
 
   return (

@@ -8,8 +8,6 @@
 !.yarn/releases
 !.yarn/versions
 
-/public/models
-
 # testing
 /coverage
 

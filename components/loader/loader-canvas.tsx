@@ -17,7 +17,7 @@ export function LoaderCanvas({ isComplete, onInteract }: LoaderCanvasProps) {
       onPointerDown={onInteract}
     >
       <Canvas
-        camera={{ position: [0, 0.32, 4.5], fov: 36 }}
+        camera={{ position: [0, 0, 4], fov: 35 }}
         dpr={[1, 1.5]}
         gl={{
           antialias: true,
@@ -34,24 +34,26 @@ export function LoaderCanvas({ isComplete, onInteract }: LoaderCanvasProps) {
         {/* Dynamic sweeping spotlight */}
         <OrbitingLight />
 
-        {/* Surrounding 3D energy elements */}
-        <LoaderParticles count={80} />
+        {/* Surrounding 3D energy elements positioned around model */}
+        <group position={[0, 0, 0]}>
+          <LoaderParticles count={75} />
+        </group>
 
         {/* The 3D Winged Globe Logo with organic wing flapping */}
         <LoaderLogo isComplete={isComplete} />
 
-        {/* Front-focused interactive inspection controls */}
+        {/* Front-focused interactive inspection controls centered on model */}
         <OrbitControls
           enableZoom={false}
           enablePan={false}
           rotateSpeed={0.5}
           dampingFactor={0.06}
           enableDamping
-          target={[0, 0.15, 0]}
-          minAzimuthAngle={-0.6}
-          maxAzimuthAngle={0.6}
-          minPolarAngle={Math.PI / 2 - 0.35}
-          maxPolarAngle={Math.PI / 2 + 0.35}
+          target={[0, 0, 0]}
+          minAzimuthAngle={-0.5}
+          maxAzimuthAngle={0.5}
+          minPolarAngle={Math.PI / 2 - 0.3}
+          maxPolarAngle={Math.PI / 2 + 0.3}
         />
       </Canvas>
     </div>
