@@ -223,10 +223,12 @@ function Ring({
       body.current.applyImpulse({ x: fx, y: fy, z: fz }, true)
     }
 
-    // Mouse repulsion. Impulse must be scaled by delta,
-    // otherwise rings get hammered once per frame and vibrate.
+    // Mouse repulsion. Impulse must be sized against mass and scaled
+    // by delta, otherwise rings get hammered once per frame and
+    // vibrate — strength kept low so a hover nudges and scatters
+    // gently instead of juggling rings against the speed clamp.
     const mouseRadius = 4
-    const mouseStrength = 100
+    const mouseStrength = 30
 
     const dx = position.x - mouse.current.x
     const dy = position.y - mouse.current.y
@@ -562,11 +564,14 @@ function RingWorld() {
     }
   }
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     raycaster.setFromCamera(pointer, camera)
 
     if (raycaster.ray.intersectPlane(plane, target)) {
-      mouse.current.copy(target)
+      // Ease the repulsion field toward the cursor instead of
+      // snapping, so entering the canvas doesn't kick the rings.
+      const smoothing = 1 - Math.exp(-12 * delta)
+      mouse.current.lerp(target, smoothing)
     }
   })
 
