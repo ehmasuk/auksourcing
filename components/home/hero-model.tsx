@@ -4,7 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { OrthographicCamera } from "@react-three/drei"
 import type { RapierRigidBody } from "@react-three/rapier"
 import { BallCollider, Physics, RigidBody } from "@react-three/rapier"
-import type { MutableRefObject } from "react"
+import type { RefObject } from "react"
 import { useLayoutEffect, useMemo, useRef } from "react"
 import * as THREE from "three"
 
@@ -75,7 +75,7 @@ function Ring({
   mouse,
 }: {
   data: RingData
-  mouse: MutableRefObject<THREE.Vector3>
+  mouse: RefObject<THREE.Vector3>
 }) {
   const body = useRef<RapierRigidBody>(null)
   const tubeRadius = data.size * 0.5
