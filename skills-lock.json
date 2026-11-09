@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "motion": {
+      "source": "motiondivision/ai-kit",
+      "sourceType": "github",
+      "skillPath": "plugins/motion/skills/motion/SKILL.md",
+      "computedHash": "524a2737c7edd60f949cdf51d254f0e28a13439af44caaf6bba44236c4d92ee6"
+    },
     "react-three-fiber": {
       "source": "freshtechbro/claudedesignskills",
       "sourceType": "github",

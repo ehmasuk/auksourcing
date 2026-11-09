@@ -6,81 +6,6 @@ import { Suspense, useMemo, useRef } from "react"
 import * as THREE from "three"
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js"
 
-// ── Floating Ambient Celestial Dust ──────────────────────────────────────
-// Seeded PRNG keeps the dust field deterministic across renders
-function createSeededRandom(seedValue: number) {
-  let state = seedValue
-  return () => {
-    state = (state * 16807) % 2147483647
-    return (state - 1) / 2147483646
-  }
-}
-
-function HeroParticles({ count = 120 }: { count?: number }) {
-  const pointsRef = useRef<THREE.Points>(null)
-
-  const [positions, colors] = useMemo(() => {
-    const random = createSeededRandom(12345)
-
-    const pos = new Float32Array(count * 3)
-    const col = new Float32Array(count * 3)
-
-    const colorElectricIndigo = new THREE.Color("#1a2ffb")
-    const colorAcidLime = new THREE.Color("#c1ff00")
-    const colorWhite = new THREE.Color("#ffffff")
-    const colorLavender = new THREE.Color("#8e99f3")
-
-    for (let i = 0; i < count; i++) {
-      const radius = 1.6 + random() * 3.4
-      const theta = random() * Math.PI * 2
-      const phi = (random() - 0.5) * Math.PI * 0.85
-
-      pos[i * 3] = radius * Math.cos(phi) * Math.cos(theta)
-      pos[i * 3 + 1] = radius * Math.sin(phi) + (random() - 0.5) * 0.6
-      pos[i * 3 + 2] = radius * Math.cos(phi) * Math.sin(theta)
-
-      const rand = random()
-      const c =
-        rand < 0.4
-          ? colorElectricIndigo
-          : rand < 0.65
-          ? colorLavender
-          : rand < 0.82
-          ? colorWhite
-          : colorAcidLime
-
-      col[i * 3] = c.r
-      col[i * 3 + 1] = c.g
-      col[i * 3 + 2] = c.b
-    }
-
-    return [pos, col]
-  }, [count])
-
-  useFrame((state, delta) => {
-    if (!pointsRef.current) return
-    pointsRef.current.rotation.y += delta * 0.08
-    pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.25) * 0.04
-  })
-
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        <bufferAttribute attach="attributes-color" args={[colors, 3]} />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.038}
-        vertexColors
-        transparent
-        opacity={0.75}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-      />
-    </points>
-  )
-}
-
 // ── Interactive Cursor Follow Spotlight ──────────────────────────────────
 function CursorLight() {
   const lightRef = useRef<THREE.PointLight>(null)
@@ -271,7 +196,7 @@ function EmblemLogo() {
 
     // Scale stays constant — everything moves via magnet/light now
     groupRef.current.position.x = magnetPosition.current.x
-    groupRef.current.position.y = bodyLift + magnetPosition.current.y + 0.8
+    groupRef.current.position.y = bodyLift + magnetPosition.current.y + 1.3
   })
 
   return (
@@ -334,9 +259,6 @@ export default function HeroLogoModel() {
         {/* Dynamic cursor follow spotlight */}
         <CursorLight />
 
-        {/* Floating dust embers */}
-        <HeroParticles count={90} />
-
         {/* 3D Winged Globe Emblem */}
         <Suspense fallback={<ModelFallback />}>
           <Float
@@ -357,7 +279,7 @@ export default function HeroLogoModel() {
           rotateSpeed={0.55}
           dampingFactor={0.06}
           enableDamping
-          target={[0, 0.55, 0]}
+          target={[0, 0.9, 0]}
           minPolarAngle={Math.PI / 3.2}
           maxPolarAngle={Math.PI / 1.9}
           minAzimuthAngle={-0.6}
