@@ -1,52 +1,31 @@
 "use client"
 
-import { motion } from "motion/react"
 import { LoaderBolt } from "./loader-bolt"
-import { useThunderRelay } from "./thunder-relay"
-
-/**
- * `layoutId` shared across the loading screen and the hero lockup.
- * Sizing is supplied per usage via `className` on the wrapper; the svg
- * fills it. Layout animation transition must live on the element
- * animating TO (the hero bolt), per Motion's shared-element rules.
- */
-const THUNDER_LAYOUT_ID = "brand-thunder"
-
-/* Duration-based tween (not a spring) so the flight releases with the
-   same long, gliding character as the initial thunder dive */
-const FLIGHT_TRANSITION = {
-  layout: {
-    duration: 1.4,
-    ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-  },
-}
+import { stageReached, useThunderRelay } from "./thunder-relay"
 
 interface ThunderBoltProps {
   className?: string
 }
 
-/** Bare shared-element bolt — used by the loading screen. */
-export function ThunderBolt({ className }: ThunderBoltProps) {
-  return (
-    <motion.span
-      layoutId={THUNDER_LAYOUT_ID}
-      transition={FLIGHT_TRANSITION}
-      className={`inline-flex shrink-0 items-center justify-center ${
-        className ?? ""
-      }`}
-      style={{ transformOrigin: "50% 50%", willChange: "transform" }}
-    >
-      <LoaderBolt className="size-full" />
-    </motion.span>
-  )
-}
-
 /**
- * Hero slot of the same true bolt — mounts in the same commit the
- * loader bolt unmounts, which is what makes Motion fly it over.
+ * Hero slot of the brand bolt — the thunder icon, now minimized. It
+ * mounts the instant the 3D thunder lands ("land" stage) at the exact
+ * point it strikes; the impact flash masks the WebGL → SVG handoff and
+ * the `storm-bolt-impact` pop sells the hit. No sparks, no flight —
+ * the strike is one continuous motion from the top of the screen
+ * straight into this slot.
  */
 export function HeroThunderBolt({ className }: ThunderBoltProps) {
-  const { hasLanded } = useThunderRelay()
-  if (!hasLanded) return null
-  return <ThunderBolt className={className} />
+  const { stage } = useThunderRelay()
+  const live = stageReached(stage, "land")
+  if (!live) return null
+  return (
+    <span
+      className={`storm-bolt-impact inline-flex shrink-0 items-center justify-center ${
+        className ?? ""
+      }`}
+    >
+      <LoaderBolt className="size-full" />
+    </span>
+  )
 }

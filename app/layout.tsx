@@ -2,6 +2,7 @@ import { Geist_Mono, Inter } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { MotionPrefs } from "@/components/motion-config"
 import { cn } from "@/lib/utils"
 
 /* Aeonik substitute (see DESIGN.md): weights ceiling at 500 —
@@ -29,7 +30,9 @@ export default function RootLayout({
       className={cn("antialiased", fontMono.variable, "font-sans", inter.variable)}
     >
       <body suppressHydrationWarning>
-        <ThemeProvider>{children}</ThemeProvider>
+        <MotionPrefs>
+          <ThemeProvider>{children}</ThemeProvider>
+        </MotionPrefs>
       </body>
     </html>
   )

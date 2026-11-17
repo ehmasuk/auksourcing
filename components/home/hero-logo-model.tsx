@@ -236,6 +236,7 @@ export default function HeroLogoModel() {
       <Canvas
         camera={{ position: [0, 0, 4.3], fov: 34 }}
         dpr={[1, 2]}
+        style={{ background: "transparent" }}
         gl={{
           antialias: true,
           alpha: true,
